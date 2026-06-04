@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { useLanguageStore } from '@/store/languageStore'
 import { useThemeStore } from '@/store/themeStore'
@@ -7,187 +7,187 @@ import { translations } from '@/i18n/translations'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/config/firebase'
 import toast from 'react-hot-toast'
-import { 
-  FiMenu, FiX, FiSun, FiMoon, FiMonitor, 
-  FiUser, FiLogOut, FiSettings 
+import {
+  FiMenu, FiX, FiSun, FiMoon, FiMonitor,
+  FiUser, FiLogOut, FiGrid, FiChevronDown,
 } from 'react-icons/fi'
 
-/**
- * Navbar Component
- * Responsive navigation with theme toggle and language selector
- */
 const Navbar = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [themeMenuOpen, setThemeMenuOpen] = useState(false)
-  const [langMenuOpen, setLangMenuOpen] = useState(false)
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
-  
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [userOpen, setUserOpen] = useState(false)
+  const [themeOpen, setThemeOpen] = useState(false)
+  const [langOpen, setLangOpen] = useState(false)
+
   const { user } = useAuthStore()
   const { language, setLanguage } = useLanguageStore()
   const { theme, setTheme } = useThemeStore()
   const navigate = useNavigate()
-  
+  const location = useLocation()
   const t = translations[language]
+
+  // close dropdowns on outside click
+  const navRef = useRef(null)
+  useEffect(() => {
+    const handler = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setUserOpen(false); setThemeOpen(false); setLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const handleLogout = async () => {
     try {
       await signOut(auth)
-      toast.success('Logged out successfully')
+      toast.success('Logged out')
       navigate('/')
-    } catch (error) {
-      toast.error('Failed to logout')
-    }
+      setUserOpen(false)
+    } catch { toast.error('Logout failed') }
   }
 
-  const themeIcons = {
-    light: <FiSun className="w-5 h-5" />,
-    dark: <FiMoon className="w-5 h-5" />,
-    system: <FiMonitor className="w-5 h-5" />,
-  }
+  const isActive = (path) =>
+    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
+
+  const linkClass = (path) =>
+    `nav-link ${isActive(path) ? 'text-green-600 dark:text-green-400 font-semibold' : ''}`
+
+  const themeIcons = { light: <FiSun size={16} />, dark: <FiMoon size={16} />, system: <FiMonitor size={16} /> }
+  const themeLabels = { light: 'Light', dark: 'Dark', system: 'System' }
+  const langLabels = { en: 'EN', kn: 'ಕನ್ನಡ', hi: 'हि' }
 
   return (
-    <nav className="sticky top-0 z-50 glass-effect border-b border-gray-200 dark:border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">F</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              FindIt
-            </span>
-          </Link>
+    <nav ref={navRef} className="sticky top-0 z-50 glass-nav">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="nav-link">{t.nav.home}</Link>
-            <Link to="/browse" className="nav-link">{t.nav.browse}</Link>
-            <Link to="/report-lost" className="nav-link">{t.nav.reportLost}</Link>
-            <Link to="/report-found" className="nav-link">{t.nav.reportFound}</Link>
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2.5 shrink-0">
+          <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center shadow-sm">
+            <span className="text-white font-bold text-base leading-none">F</span>
           </div>
+          <span className="text-base font-bold text-gray-900 dark:text-white tracking-tight">FindIt</span>
+        </Link>
 
-          {/* Right Side Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Theme Toggle */}
-            <div className="relative">
-              <button
-                onClick={() => setThemeMenuOpen(!themeMenuOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                {themeIcons[theme]}
-              </button>
-              {themeMenuOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2">
-                  {['light', 'dark', 'system'].map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => {
-                        setTheme(t)
-                        setThemeMenuOpen(false)
-                      }}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2"
-                    >
-                      {themeIcons[t]}
-                      <span className="capitalize">{t}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+        {/* Desktop nav links */}
+        <div className="hidden md:flex items-center gap-6">
+          <Link to="/" className={linkClass('/')}>{t.nav.home}</Link>
+          <Link to="/browse" className={linkClass('/browse')}>{t.nav.browse}</Link>
+          <Link to="/report-lost" className={linkClass('/report-lost')}>{t.nav.reportLost}</Link>
+          <Link to="/report-found" className={linkClass('/report-found')}>{t.nav.reportFound}</Link>
+          <Link to="/about" className={linkClass('/about')}>{t.nav.about}</Link>
+          <Link to="/contact" className={linkClass('/contact')}>{t.nav.contact}</Link>
+        </div>
 
-            {/* Language Selector */}
-            <div className="relative">
-              <button
-                onClick={() => setLangMenuOpen(!langMenuOpen)}
-                className="px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium"
-              >
-                {language.toUpperCase()}
-              </button>
-              {langMenuOpen && (
-                <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2">
-                  {['en', 'kn', 'hi'].map((lang) => (
-                    <button
-                      key={lang}
-                      onClick={() => {
-                        setLanguage(lang)
-                        setLangMenuOpen(false)
-                      }}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      {lang === 'en' ? 'English' : lang === 'kn' ? 'ಕನ್ನಡ' : 'हिंदी'}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+        {/* Right side */}
+        <div className="hidden md:flex items-center gap-2">
 
-            {/* User Menu or Login */}
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <FiUser className="w-5 h-5" />
-                </button>
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2">
-                    <Link
-                      to="/dashboard"
-                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      {t.nav.dashboard}
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-red-600"
-                    >
-                      <FiLogOut />
-                      <span>{t.nav.logout}</span>
-                    </button>
-                  </div>
-                )}
+          {/* Theme dropdown */}
+          <div className="relative">
+            <button onClick={() => { setThemeOpen(!themeOpen); setLangOpen(false); setUserOpen(false) }}
+              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              {themeIcons[theme]}
+            </button>
+            {themeOpen && (
+              <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 rounded-xl shadow-stripe-lg py-1 z-50">
+                {['light','dark','system'].map(th => (
+                  <button key={th} onClick={() => { setTheme(th); setThemeOpen(false) }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors
+                      ${theme === th ? 'text-green-600 font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
+                    {themeIcons[th]}
+                    {themeLabels[th]}
+                  </button>
+                ))}
               </div>
-            ) : (
-              <Link
-                to="/login"
-                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                {t.nav.login}
-              </Link>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            {mobileMenuOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
-          </button>
+          {/* Language dropdown */}
+          <div className="relative">
+            <button onClick={() => { setLangOpen(!langOpen); setThemeOpen(false); setUserOpen(false) }}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              {langLabels[language]}
+              <FiChevronDown size={12} />
+            </button>
+            {langOpen && (
+              <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 rounded-xl shadow-stripe-lg py-1 z-50">
+                {[['en','English'],['kn','ಕನ್ನಡ'],['hi','हिंदी']].map(([code, label]) => (
+                  <button key={code} onClick={() => { setLanguage(code); setLangOpen(false) }}
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors
+                      ${language === code ? 'text-green-600 font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* User or Login */}
+          {user ? (
+            <div className="relative">
+              <button onClick={() => { setUserOpen(!userOpen); setThemeOpen(false); setLangOpen(false) }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <div className="w-7 h-7 bg-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <FiChevronDown size={12} className="text-gray-500" />
+              </button>
+              {userOpen && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 rounded-xl shadow-stripe-lg py-1 z-50">
+                  <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
+                    <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{user.displayName || 'User'}</p>
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  </div>
+                  <Link to="/dashboard" onClick={() => setUserOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <FiGrid size={14} /> {t.nav.dashboard}
+                  </Link>
+                  <button onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+                    <FiLogOut size={14} /> {t.nav.logout}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/login" className="btn-primary text-sm px-5 py-2">{t.nav.login}</Link>
+          )}
         </div>
+
+        {/* Mobile toggle */}
+        <button onClick={() => setMobileOpen(!mobileOpen)}
+          className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+          {mobileOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+        </button>
       </div>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <div className="px-4 py-4 space-y-3">
-            <Link to="/" className="block py-2">{t.nav.home}</Link>
-            <Link to="/browse" className="block py-2">{t.nav.browse}</Link>
-            <Link to="/report-lost" className="block py-2">{t.nav.reportLost}</Link>
-            <Link to="/report-found" className="block py-2">{t.nav.reportFound}</Link>
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a] px-4 py-4 space-y-1">
+          {[['/', t.nav.home], ['/browse', t.nav.browse], ['/report-lost', t.nav.reportLost],
+            ['/report-found', t.nav.reportFound], ['/about', t.nav.about], ['/contact', t.nav.contact]].map(([path, label]) => (
+            <Link key={path} to={path} onClick={() => setMobileOpen(false)}
+              className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                ${isActive(path) ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+              {label}
+            </Link>
+          ))}
+          <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
             {user ? (
               <>
-                <Link to="/dashboard" className="block py-2">{t.nav.dashboard}</Link>
-                <button onClick={handleLogout} className="block py-2 text-red-600">
+                <Link to="/dashboard" onClick={() => setMobileOpen(false)}
+                  className="block px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  {t.nav.dashboard}
+                </Link>
+                <button onClick={() => { handleLogout(); setMobileOpen(false) }}
+                  className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10">
                   {t.nav.logout}
                 </button>
               </>
             ) : (
-              <Link to="/login" className="block py-2">{t.nav.login}</Link>
+              <Link to="/login" onClick={() => setMobileOpen(false)}
+                className="block px-3 py-2.5 rounded-lg text-sm font-semibold text-white bg-green-600 text-center hover:bg-green-700">
+                {t.nav.login}
+              </Link>
             )}
           </div>
         </div>
