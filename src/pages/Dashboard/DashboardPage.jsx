@@ -147,7 +147,7 @@ const DashboardPage = () => {
                         {item.itemName}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {item.location} • {new Date(item.date).toLocaleDateString()}
+                        {item.location}{item.date ? ` • ${new Date(item.date?.seconds ? item.date.seconds * 1000 : item.date).toLocaleDateString()}` : ''}
                       </p>
                     </div>
                   </div>

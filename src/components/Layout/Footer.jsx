@@ -1,71 +1,85 @@
 import { Link } from 'react-router-dom'
-import { FiMail, FiPhone, FiMapPin, FiGithub, FiTwitter, FiInstagram } from 'react-icons/fi'
+import { useLanguageStore } from '@/store/languageStore'
+import { translations } from '@/i18n/translations'
+import { FiMail, FiPhone, FiMapPin, FiFacebook, FiTwitter, FiInstagram } from 'react-icons/fi'
 
-const Footer = () => (
-  <footer className="bg-gray-50 dark:bg-[#0d0d0d] border-t border-gray-200 dark:border-gray-800">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+/**
+ * Footer Component
+ * Site footer with links and contact information
+ */
+const Footer = () => {
+  const { language } = useLanguageStore()
+  const t = translations[language]
 
-        {/* Brand */}
-        <div className="md:col-span-2">
-          <Link to="/" className="flex items-center gap-2.5 mb-4">
-            <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-base">F</span>
+  return (
+    <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* About Section */}
+          <div className="col-span-1 md:col-span-2">
+            <div className="flex items-center space-x-2 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-xl">F</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">FindIt</span>
             </div>
-            <span className="text-base font-bold text-gray-900 dark:text-white">FindIt</span>
-          </Link>
-          <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-xs mb-5">
-            FindIt is a campus lost and found platform designed to help students and staff reunite with their lost items. Because every item matters.
-          </p>
-          <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
-            <a href="mailto:support@findit.com" className="flex items-center gap-2 hover:text-green-600 transition-colors">
-              <FiMail size={14}/> support@findit.com
-            </a>
-            <a href="tel:+919876543210" className="flex items-center gap-2 hover:text-green-600 transition-colors">
-              <FiPhone size={14}/> +91 98765 43210
-            </a>
-            <p className="flex items-center gap-2">
-              <FiMapPin size={14}/> University Campus, Block A
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              {t.footer.aboutDesc}
             </p>
+            <div className="flex space-x-4">
+              <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">
+                <FiFacebook className="w-5 h-5" />
+              </a>
+              <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">
+                <FiTwitter className="w-5 h-5" />
+              </a>
+              <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">
+                <FiInstagram className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
+              {t.footer.quickLinks}
+            </h3>
+            <ul className="space-y-2">
+              <li><Link to="/" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">{t.nav.home}</Link></li>
+              <li><Link to="/browse" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">{t.nav.browse}</Link></li>
+              <li><Link to="/report-lost" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">{t.nav.reportLost}</Link></li>
+              <li><Link to="/report-found" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">{t.nav.reportFound}</Link></li>
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
+              {t.footer.contact}
+            </h3>
+            <ul className="space-y-3">
+              <li className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                <FiMail className="w-4 h-4" />
+                <span>support@findit.edu</span>
+              </li>
+              <li className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                <FiPhone className="w-4 h-4" />
+                <span>+91 1234567890</span>
+              </li>
+              <li className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                <FiMapPin className="w-4 h-4" />
+                <span>Campus, City</span>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* Quick Links */}
-        <div>
-          <h3 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-widest mb-4">Quick Links</h3>
-          <ul className="space-y-2.5">
-            {[['/', 'Home'], ['/browse', 'Browse Items'], ['/report-lost', 'Report Lost'], ['/report-found', 'Report Found']].map(([to, label]) => (
-              <li key={to}>
-                <Link to={to} className="text-sm text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">{label}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Help */}
-        <div>
-          <h3 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-widest mb-4">Help</h3>
-          <ul className="space-y-2.5">
-            {[['#', 'FAQs'], ['/contact', 'Contact Us'], ['/about', 'About FindIt'], ['#', 'Privacy Policy'], ['#', 'Terms of Use']].map(([to, label]) => (
-              <li key={label}>
-                <Link to={to} className="text-sm text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">{label}</Link>
-              </li>
-            ))}
-          </ul>
+        <div className="border-t border-gray-200 dark:border-gray-700 mt-8 pt-8 text-center text-gray-600 dark:text-gray-400">
+          <p>&copy; {new Date().getFullYear()} FindIt. {t.footer.rights}</p>
         </div>
       </div>
-
-      <div className="mt-10 pt-6 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-xs text-gray-400">© {new Date().getFullYear()} FindIt. All rights reserved.</p>
-        <div className="flex items-center gap-4">
-          <a href="#" className="text-gray-400 hover:text-green-600 transition-colors"><FiGithub size={16}/></a>
-          <a href="#" className="text-gray-400 hover:text-green-600 transition-colors"><FiTwitter size={16}/></a>
-          <a href="#" className="text-gray-400 hover:text-green-600 transition-colors"><FiInstagram size={16}/></a>
-          <a href="mailto:support@findit.com" className="text-gray-400 hover:text-green-600 transition-colors"><FiMail size={16}/></a>
-        </div>
-      </div>
-    </div>
-  </footer>
-)
+    </footer>
+  )
+}
 
 export default Footer

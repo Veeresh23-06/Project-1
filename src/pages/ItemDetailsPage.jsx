@@ -109,7 +109,11 @@ const ItemDetailsPage = () => {
                 </div>
                 <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
                   <FiCalendar className="w-5 h-5" />
-                  <span>{new Date(item.date).toLocaleDateString()}</span>
+                  <span>
+                    {item.date
+                      ? new Date(item.date?.seconds ? item.date.seconds * 1000 : item.date).toLocaleDateString()
+                      : 'Date not specified'}
+                  </span>
                 </div>
               </div>
 

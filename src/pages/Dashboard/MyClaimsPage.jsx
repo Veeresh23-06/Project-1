@@ -134,7 +134,15 @@ const MyClaimsPage = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
-                      {claim.createdAt && new Date(claim.createdAt.seconds * 1000).toLocaleDateString()}
+                      {claim.createdAt
+                        ? new Date(
+                            claim.createdAt?.seconds
+                              ? claim.createdAt.seconds * 1000
+                              : claim.createdAt instanceof Date
+                              ? claim.createdAt
+                              : claim.createdAt
+                          ).toLocaleDateString()
+                        : '—'}
                     </td>
                     <td className="px-6 py-4">
                       <Link

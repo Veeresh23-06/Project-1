@@ -1,20 +1,11 @@
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore'
+import { collection, query, where, getDocs, updateDoc, doc, Timestamp } from 'firebase/firestore'
 import { db } from '@/config/firebase'
 import { ARCHIVE_DURATION } from '@/config/categories'
 
-/**
- * Archive Service
- * Handles automatic archiving of old items (30 days)
- */
-
-/**
- * Check and archive old items
- * This should be called by a Firebase Cloud Function on a schedule
- * @returns {number} - Number of items archived
- */
 export const archiveOldItems = async () => {
   try {
-    const thirtyDaysAgo = new Date(Date.now() - ARCHIVE_DURATION)
+    // Use Firestore Timestamp for correct comparison
+    const thirtyDaysAgo = Timestamp.fromDate(new Date(Date.now() - ARCHIVE_DURATION))
     
     // Query items older than 30 days that are not claimed or archived
     const q = query(
